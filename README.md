@@ -1,120 +1,172 @@
-# Inbox Copilot
-
-Inbox Copilot is a **keyboard-first, AI-powered email client** designed to help users manage high-volume inboxes more efficiently through **real-time synchronization, semantic search, and AI-assisted drafting**.
-
-The system combines a modern full-stack architecture with Retrieval-Augmented Generation (RAG) to ground AI responses in a user’s actual email history, enabling faster replies, better context retention, and reduced inbox friction.
-
+# Inbox Copilot — AI-Powered Email Client
+ 
+A keyboard-first email client with an AI copilot that drafts replies and answers questions about your inbox, grounded in your actual prior threads using RAG. Built as a production SaaS with subscription billing, multi-account support, and real-time sync.
+ 
+**Live Demo** → *(add deployed URL)*
+ 
 ---
-
-## 🚀 Core Capabilities
-
-### Multi-Account Email Client
-- Supports multiple email providers (e.g. Gmail, Outlook) through a unified email API.
-- Full support for reading, composing, replying, and threading conversations.
-- Maintains local mailbox state synced with external providers.
-
-### Real-Time Inbox Synchronization
-- Uses **webhooks + incremental sync tokens** to keep inboxes up to date.
-- Avoids redundant data fetching while ensuring low-latency updates.
-- Designed to scale with inbox size and message volume.
-
-### AI Email Copilot (RAG-Based)
-- Drafts context-aware email replies grounded in relevant past conversations.
-- Enables natural-language questions over the inbox (e.g. “What did I promise this client last week?”).
-- Uses Retrieval-Augmented Generation to ensure responses are based on real emails rather than hallucinated context.
-
-### Semantic & Full-Text Search
-- Emails are embedded and indexed to support fast semantic search.
-- Queries return the most relevant messages and threads based on meaning, not just keywords.
-- Supports large inboxes without degrading query quality.
-
-### Keyboard-First User Experience
-- Command palette for navigation and actions.
-- Keyboard shortcuts for composing, replying, and inbox management.
-- Layout inspired by high-productivity email tools.
-
-### Subscription & Usage Management
-- Free and paid tiers with feature gating.
-- Subscription billing handled via Stripe.
-- Access to AI features controlled by subscription status and usage limits.
-
+ 
+## What It Does
+ 
+Most email clients are passive — they store and display messages but leave all the thinking to you. Inbox Copilot makes your email history queryable and actionable:
+ 
+- Ask "What did I promise this client last week?" and get a sourced answer from your actual threads
+- Draft replies with full context from prior conversations, not hallucinated content
+- Navigate and manage your inbox entirely from the keyboard
+ 
 ---
-
-## 🧠 High-Level Architecture
-
-1. **Authentication & User State**
-   - Users authenticate via OAuth.
-   - User accounts are synced and persisted in a relational database.
-
-2. **Email Ingestion & Sync**
-   - Email providers are accessed through a unified email API.
-   - Initial inbox sync fetches messages and threads.
-   - Webhooks trigger incremental updates using delta tokens.
-
-3. **Search & Retrieval**
-   - Email content is normalized and embedded.
-   - Embeddings are stored in a vector-enabled search layer.
-   - Semantic similarity search retrieves relevant emails for queries.
-
-4. **Retrieval-Augmented Generation**
-   - Retrieved emails are injected as context into AI prompts.
-   - The language model generates grounded replies or answers.
-   - Responses are constrained to inbox-derived context.
-
-5. **Billing & Feature Gating**
-   - Subscription status is tracked via Stripe webhooks.
-   - Feature access (AI drafting, semantic search limits) is gated per tier.
-
+ 
+## Features
+ 
+- **AI reply drafting** — context-aware drafts grounded in relevant prior threads via RAG
+- **Inbox Q&A** — natural language questions answered from your real email history
+- **Multi-account support** — connect Gmail, Outlook, and other providers through a unified API
+- **Real-time sync** — webhooks + incremental sync tokens keep state current without redundant reprocessing
+- **Semantic search** — find emails by meaning, not just keywords; powered by vector embeddings
+- **Keyboard-first UX** — command palette, shortcuts for composing/replying/navigating
+- **Subscription SaaS** — free vs. pro tiers with feature gating, Stripe billing, and webhook-driven subscription management
+ 
 ---
-
-## 🛠 Tech Stack
-
-- **Frontend / Backend**: Next.js, TypeScript  
-- **AI & Search**: OpenAI API, Retrieval-Augmented Generation (RAG), vector embeddings  
-- **Data Layer**: PostgreSQL, Prisma ORM  
-- **Search Engine**: Vector + full-text search indexing  
-- **Authentication**: Clerk (OAuth + session management)  
-- **Payments**: Stripe (subscriptions, webhooks)  
-- **Deployment**: Serverless infrastructure
-
+ 
+## Architecture
+ 
+```
+Email Providers (Gmail / Outlook)
+         ↓
+   Aurinko API (OAuth, webhooks, incremental sync)
+         ↓
+   PostgreSQL via Prisma ──── threads, metadata, user state
+         ↓
+   Embedding Pipeline (OpenAI)
+         ↓
+   Pinecone ─────────────────── semantic vector index
+         ↓
+   RAG Query (LangChain + OpenAI)
+         ↓
+   Copilot Response (draft reply / answer question)
+```
+ 
+The core constraint: AI responses are always grounded in emails that exist in your inbox. No hallucinated context.
+ 
 ---
-
-## 🎯 Design Goals
-
-- **Grounded AI Responses**  
-  Ensure AI outputs are always tied to real inbox data.
-
-- **Low-Latency Sync**  
-  Keep inbox state current without unnecessary reprocessing.
-
-- **Productivity-First UX**  
-  Optimize for keyboard navigation and minimal context switching.
-
-- **Scalable SaaS Architecture**  
-  Support growing inboxes, multiple accounts, and monetization.
-
+ 
+## Tech Stack
+ 
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 14 (App Router) |
+| Language | TypeScript |
+| AI / LLM | OpenAI API |
+| RAG | LangChain + Pinecone |
+| Email Sync | Aurinko API |
+| Auth | Clerk |
+| Payments | Stripe + webhooks |
+| Database | PostgreSQL via Prisma ORM |
+| File Storage | AWS S3 |
+| Styling | Tailwind CSS |
+ 
 ---
-
-## ⚠️ Tradeoffs & Limitations
-
-- AI response quality depends on embedding quality and retrieval accuracy.
-- Large inboxes increase indexing and storage costs.
-- RAG prioritizes correctness over creativity, which may reduce stylistic variation in drafts.
-
-These tradeoffs were intentional to favor reliability and user trust.
-
+ 
+## Project Structure
+ 
+```
+├── app/              # Next.js App Router — pages and API routes
+├── components/       # UI components (email list, compose, copilot panel)
+├── lib/              # RAG pipeline, Aurinko sync, embedding logic
+├── prisma/           # Schema and migrations
+└── public/           # Static assets
+```
+ 
 ---
-
-## 📈 What I Learned
-
-- Designing **RAG pipelines over user-generated data** at scale.
-- Handling real-time synchronization with external APIs using webhooks.
-- Balancing AI capability with cost and latency constraints.
-- Building and monetizing a production-style SaaS application end-to-end.
-
+ 
+## Running Locally
+ 
+**Prerequisites:** Node.js 18+, PostgreSQL, Pinecone account, OpenAI key, Aurinko account, Clerk app, Stripe account, AWS S3 bucket
+ 
+```bash
+git clone https://github.com/VinayakMaharaj/Inbox-Copilot.git
+cd Inbox-Copilot
+npm install
+```
+ 
+Create a `.env.local` file:
+ 
+```env
+# Database
+DATABASE_URL=
+ 
+# Clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+ 
+# OpenAI
+OPENAI_API_KEY=
+ 
+# Pinecone
+PINECONE_API_KEY=
+PINECONE_INDEX_NAME=
+ 
+# Aurinko (email sync)
+AURINKO_CLIENT_ID=
+AURINKO_CLIENT_SECRET=
+AURINKO_SIGNING_SECRET=
+ 
+# Stripe
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+ 
+# AWS S3
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=
+AWS_BUCKET_NAME=
+```
+ 
+```bash
+npx prisma migrate dev
+npm run dev
+```
+ 
+Open [http://localhost:3000](http://localhost:3000).
+ 
 ---
-
-## 📄 License
-
-This project is intended for educational and demonstration purposes.
-
+ 
+## Design Decisions
+ 
+**Why RAG over fine-tuning?**
+Fine-tuning would require retraining as the inbox grows and can't reference specific threads at query time. RAG retrieves semantically relevant emails at inference time — keeping responses current and grounded without retraining.
+ 
+**Why Aurinko over direct Gmail/Outlook APIs?**
+Aurinko abstracts OAuth flows, webhook management, and incremental sync across providers. Direct integrations with each provider would have tripled the setup work for the same result.
+ 
+**Why Pinecone over pgvector?**
+For a project already using PostgreSQL for relational data, pgvector would have been simpler. Pinecone's managed infrastructure and filtering capabilities made it the cleaner choice for the vector layer specifically — worth the added dependency.
+ 
+**Webhook-first sync over polling**
+Polling on a fixed interval either over-fetches (wasting API quota) or under-fetches (stale state). Webhooks + incremental delta tokens give low-latency updates with no redundant processing.
+ 
+---
+ 
+## Tradeoffs & Limitations
+ 
+- AI response quality depends on embedding quality and retrieval accuracy
+- Large inboxes increase indexing and storage costs
+- RAG favors correctness over creativity — drafts may be less stylistically varied than a purely generative approach
+ 
+These tradeoffs were intentional to prioritize reliability and user trust over stylistic flair.
+ 
+---
+ 
+## What I Learned
+ 
+- Designing RAG pipelines over user-generated data with real retrieval constraints
+- Handling real-time sync with external APIs using webhooks and delta tokens
+- Balancing AI capability against cost and latency at the SaaS layer
+- Building and monetizing a full production application end-to-end as a solo developer
+ 
+---
+ 
+## Author
+ 
+**Vinayak Maharaj** — [LinkedIn](https://www.linkedin.com/in/vinayak-maharaj/) · [Portfolio](https://vinayakmaharaj.netlify.app/)
